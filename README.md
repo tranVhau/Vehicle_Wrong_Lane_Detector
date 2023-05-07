@@ -1,10 +1,10 @@
 # Vehicle_Wrong_Lane_Detector
 
-### Introduction
+### 1. Introduction
 
 using Yolov8 to detect object, Bytetrack to tracking and open-cv to detect vehicle in the wrong lane (car and motorbike)
 
-### Installation
+### 2. Installation
 ``` 
 git clone https://github.com/tranVhau/Vehicle_Wrong_Lane_Detector.git 
 pip install ultralytics==8.0.90
@@ -12,13 +12,13 @@ pip install opencv-python
 pip install numpy
 
 ```
-#### download sample video for detection
+#### Download sample video for detection
 ```
 wget https://
 
 ```
 
-### Download YOLOv8 model 
+#### Download YOLOv8 model 
 You can use pre-trained model by: 
 ```
 wget https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt
@@ -31,16 +31,16 @@ Or you can also use my trained model
 wget https://
 
 ```
-### Usage
+### 3. Usage
 Open terminal 
 ```
 python run.py
 ```
 
-In the **Draw Detection Line** window use mouse to draw detection line
+In the **Draw Detection Line** window use mouse to draw detection line <br>
+...<br>
+And select **Specify the side of lane** <br>
 
-
-
-### Results
+### 4. Results
 
 ...

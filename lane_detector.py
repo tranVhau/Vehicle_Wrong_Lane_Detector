@@ -8,6 +8,7 @@ class LaneDetector:
          self.video_source = video_source
          self.video = cv2.VideoCapture(video_source)
          self.points = None
+         self.detection_line_coords = None
     
      def caculate_all_points(self):  #caculate all point from given 2 coordinates (2 tuples, 8 points)
         #  Open the video file
@@ -16,8 +17,9 @@ class LaneDetector:
          width_vid = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         
          self.points = [[[0,self.first_coords[1]],self.first_coords, self.second_coords,[0,self.second_coords[1]]],[[width_vid, self.first_coords[1]],self.first_coords, self.second_coords,[width_vid,self.second_coords[1]]]]
-
+         self.detection_line_coords = [self.first_coords, self.second_coords]
          print(self.points)
+         print(self.detection_line_coords)
      
      def draw_shape(self, frame):
         #  image = cv2.imread("./img2.png")

@@ -6,10 +6,9 @@ from draw_lane import LineDrawerGUI
 from lane_detector import LaneDetector
 
 
-
 # Define colors and font for the label of bouding box
 box_color = (0, 255, 255)  
-box_color_alert = (0, 0, 200)
+box_color_alert = (0, 80, 255)
 text_color = (0, 0, 0)  
 font = cv2.FONT_HERSHEY_SIMPLEX  
 font_scale = 0.5  
@@ -22,19 +21,24 @@ def caculate_centroid(xmin, ymin, xmax, ymax):
    y_center = (ymin + ymax) / 2
    return [x_center, y_center]
 
-def draw_detection_line(frame, points):
+def draw_detection_line(frame, line):
     color = (253, 55, 165) 
     thickness = 2
     isClosed = False
     
-    shape_1 = points[0]
-    shape_2 = points[1]
-    shape_1 = np.array(shape_1)
-    shape_2 = np.array(shape_2)
-    shape_1 = shape_1.reshape((-1,1,2))
-    shape_2 = shape_2.reshape((-1,1,2))
-    frame = cv2.polylines(frame, [shape_1], isClosed, color, thickness)
-    frame = cv2.polylines(frame, [shape_2], isClosed, color, thickness)
+   #  shape_1 = points[0]
+   #  shape_2 = points[1]
+   #  shape_1 = np.array(shape_1)
+   #  shape_2 = np.array(shape_2)
+   #  shape_1 = shape_1.reshape((-1,1,2))
+   #  shape_2 = shape_2.reshape((-1,1,2))
+   #  frame = cv2.polylines(frame, [shape_1], isClosed, color, thickness)
+   #  frame = cv2.polylines(frame, [shape_2], isClosed, color, thickness)
+   
+    detection_line = line
+    detection_line = np.array(detection_line)
+    detection_line = detection_line.reshape((-1,1,2))
+    frame = cv2.polylines(frame, [detection_line], isClosed, color, thickness)
     return frame
 
 # lane_area represent for the lane [x1 ,x2, x3, x4]
@@ -48,8 +52,8 @@ def lane_detector(lane_area, point, option_val, class_ID):
       
    if(left_lane==1 or right_lane==1 or left_lane==0 or right_lane ==0): # inside the lane area
       if((left_lane == 1 or left_lane == 0)): #if the point (vehicle) on the left lane
-         # print('Car-Motobike')
-         if(option_val == 1): #car-motobike
+         # print('Car-Motorbike')
+         if(option_val == 1): #car-motorbike
             if(class_ID == 3): 
                return False
             else: 
@@ -65,7 +69,7 @@ def lane_detector(lane_area, point, option_val, class_ID):
                return True
             else: 
                return False
-         else:                #motobike-car
+         else:                #motorbike-car
             if(class_ID == 3): 
                return False
             else: 
@@ -75,8 +79,8 @@ def lane_detector(lane_area, point, option_val, class_ID):
       
 #Draw the bounding box and label on the image 
 #*****option_val variable values*****
-#Car-Motobike:1 (car-left, motobike-right)
-#Motobike-Car:2 ...
+#Car-Motorbike:1 (car-left, motorbike-right)
+#Motorbike-Car:2 ...
 def draw_bouding_box(frame, label, xmin, ymin, xmax, ymax, isWrong):
    # Get the size of the label text
    (label_width, label_height), _ = cv2.getTextSize(label, font, font_scale, thickness)
@@ -96,7 +100,7 @@ def draw_bouding_box(frame, label, xmin, ymin, xmax, ymax, isWrong):
 def run(source_path, destination_path):
    
    # Load the YOLO model
-   model = YOLO('yolov8s.pt')
+   model = YOLO('yolov8n.pt')
    
    # get infomation of detecting video
    cap = cv2.VideoCapture(source_path)
@@ -126,7 +130,7 @@ def run(source_path, destination_path):
    
    # print(ld2.points)
    # Loop over each frame of the video and perform object detection and tracking 
-   #Filter the detection to only include classes (2(cars) 7(trucks) 5(bus))=>car   3(motobike)
+   #Filter the detection to only include classes (2(cars) 7(trucks) 5(bus))=>car   3(motorbike)
    for result in model.track(source = source_path, tracker = 'bytetrack.yaml', show=False, stream=True, agnostic_nms=True, classes=[2,3,5,7]):
         
         # Get the original frame from the detection result
@@ -155,22 +159,11 @@ def run(source_path, destination_path):
           # Get the size of the label text
           
           vehicle_pos = caculate_centroid(xmin, ymin, xmax, ymax)
-          flag = lane_detector(ld2.points, vehicle_pos, ld.option_val, data[5])
-          draw_bouding_box(frame, label, xmin, ymin, xmax, ymax,flag)
+          wrong_flag = lane_detector(ld2.points, vehicle_pos, ld.option_val, data[5])
+          draw_bouding_box(frame, label, xmin, ymin, xmax, ymax,wrong_flag)
           
-          
-          
-          
-          
-         #  (label_width, label_height), _ = cv2.getTextSize(label, font, font_scale, thickness)
-          
-         #  cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), box_color, thickness)
-         #  cv2.rectangle(frame, (xmin, ymin - label_height - 10), (xmin + label_width, ymin), box_color, -1)
-         #  cv2.putText(frame, label, (xmin, ymin - 5), font, font_scale, text_color, thickness)
-        
-        frame = draw_detection_line(frame,ld2.points)
+        frame = draw_detection_line(frame,ld2.detection_line_coords)
         video_out.write(frame)
    video_out.release()
 
-
-run(source_path = "./bridge1.mp4", destination_path = "./results/")
+run(source_path = "./bridge.mp4", destination_path = "./results/")

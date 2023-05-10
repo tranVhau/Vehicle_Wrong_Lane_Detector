@@ -31,13 +31,12 @@ class LineDrawerGUI:
 
         self.option_val = tk.StringVar(value="")
         tk.Label(self.root, text="Specify the side of lane:").pack()
-        tk.Radiobutton(self.root, text="Car-Motobike", variable=self.option_val, value=1).pack()
-        tk.Radiobutton(self.root, text="Motobike-Car", variable=self.option_val, value=2).pack()
+        tk.Radiobutton(self.root, text="Car-Motorbike", variable=self.option_val, value=1).pack()
+        tk.Radiobutton(self.root, text="Motorbike-Car", variable=self.option_val, value=2).pack()
         
         tk.Button(self.root, text="Confirm", command=self.save_names).pack()
         self.root.mainloop()
             
-
     def on_button_press(self, event):
         self.start_x, self.start_y = event.x, event.y
 

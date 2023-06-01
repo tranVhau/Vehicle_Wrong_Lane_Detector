@@ -47,8 +47,8 @@ python run.py
 ```
 
 In the **Draw Detection Line** window use mouse to draw detection line <br>
-...<br>
-And select **Specify the side of lane** <br>
+AND <br>
+Select **Specify the side of lane** option <br>
 ![image](https://github.com/tranVhau/Vehicle_Wrong_Lane_Detector/assets/75488759/3527c22b-887e-43be-b07e-114ac6f0c0fb)
 
 
@@ -56,7 +56,3 @@ And select **Specify the side of lane** <br>
 
 samples of results in ./results
 
-### 5. References
-
-- https://github.com/ifzhang/ByteTrack.git <br>
-- https://github.com/ultralytics/ultralytics.git

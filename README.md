@@ -8,7 +8,7 @@ using Yolov8 to detect object, Bytetrack to tracking and open-cv to detect vehic
 
 ```
 git clone https://github.com/tranVhau/Vehicle_Wrong_Lane_Detector.git
-pip install ultralytics==8.0.90
+pip install ultralytics==8.0.111
 pip install opencv-python
 pip install numpy
 

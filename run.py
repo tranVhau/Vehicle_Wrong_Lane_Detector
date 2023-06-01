@@ -35,7 +35,6 @@ def draw_detection_line(frame, line):
     #  shape_2 = shape_2.reshape((-1,1,2))
     #  frame = cv2.polylines(frame, [shape_1], isClosed, color, thickness)
     #  frame = cv2.polylines(frame, [shape_2], isClosed, color, thickness)
-
     detection_line = line
     detection_line = np.array(detection_line)
     detection_line = detection_line.reshape((-1, 1, 2))
@@ -57,24 +56,24 @@ def lane_detector(lane_area, point, option_val, class_ID):
             # print('Car-Motorbike')
             # print(class_ID)
             if (option_val == 1):  # car-motorbike
-                if (class_ID == 3):
+                if (class_ID == 4):
                     return False
                 else:
                     return True
             else:
-                if (class_ID == 3):
+                if (class_ID == 4):
 
                     return True
                 else:
                     return False
         else:  # on the right lane
             if (option_val == 1):
-                if (class_ID == 3):
+                if (class_ID == 4):
                     return True
                 else:
                     return False
             else:  # motorbike-car
-                if (class_ID == 3):
+                if (class_ID == 4):
                     return False
                 else:
                     return True
@@ -112,7 +111,9 @@ def draw_bouding_box(frame, label, xmin, ymin, xmax, ymax, isWrong):
 def run(source_path, destination_path):
 
     # Load the YOLO model
-    model = YOLO('yolov8n.pt')
+    # model = YOLO('best.pt')
+
+    model = YOLO("./yolov8n")
 
     # get infomation of detecting video
     cap = cv2.VideoCapture(source_path)
@@ -141,7 +142,7 @@ def run(source_path, destination_path):
     # print(ld2.points)
     # Loop over each frame of the video and perform object detection and tracking
     # Filter the detection to only include classes (2(cars) 7(trucks) 5(bus))=>car   3(motorbike)
-    for result in model.track(source=source_path, tracker='bytetrack.yaml', show=False, stream=True, agnostic_nms=True, classes=[2, 3, 5, 7]):
+    for result in model.track(source=source_path, tracker='bytetrack.yaml', show=False, stream=True, agnostic_nms=True):
 
         # Get the original frame from the detection result
         frame = result.orig_img
@@ -158,20 +159,22 @@ def run(source_path, destination_path):
         # detections = [lst for lst in detections if lst[6] in [2, 7]]
         frame = draw_detection_line(frame, ld2.detection_line_coords)
         for data in detections:
-           # Define the coordinates of the bounding box
-            xmin, ymin, xmax, ymax = int(data[0]), int(
-                data[1]), int(data[2]), int(data[3])
+            # Define the coordinates of the bounding box
+            if (len(data) == 8):
+                xmin, ymin, xmax, ymax = int(data[0]), int(
+                    data[1]), int(data[2]), int(data[3])
 
-            # Define the label for the bounding box
-            label = f"id:{data[7]:.0f} { model.model.names[data[6]]}"
+                # Define the label for the bounding box
+                label = f"id:{data[7]:.0f} { model.model.names[data[6]]}"
 
-            # Draw the bounding box and label on the image
-            # Get the size of the label text
+                # Draw the bounding box and label on the image
+                # Get the size of the label text
 
-            vehicle_pos = caculate_centroid(xmin, ymin, xmax, ymax)
-            wrong_flag = lane_detector(
-                ld2.points, vehicle_pos, ld.option_val, data[6])
-            draw_bouding_box(frame, label, xmin, ymin, xmax, ymax, wrong_flag)
+                vehicle_pos = caculate_centroid(xmin, ymin, xmax, ymax)
+                wrong_flag = lane_detector(
+                    ld2.points, vehicle_pos, ld.option_val, data[6])
+                draw_bouding_box(frame, label, xmin, ymin,
+                                 xmax, ymax, wrong_flag)
 
         video_out.write(frame)
     video_out.release()

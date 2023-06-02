@@ -1,4 +1,5 @@
 from ultralytics import YOLO
+from PIL import Image
 import numpy as np
 import cv2
 import os
@@ -13,6 +14,7 @@ text_color = (0, 0, 0)
 font = cv2.FONT_HERSHEY_SIMPLEX
 font_scale = 0.5
 thickness = 2
+wrong_lane_list = []
 
 
 # Calculate the centroid of the bounding box
@@ -56,24 +58,23 @@ def lane_detector(lane_area, point, option_val, class_ID):
             # print('Car-Motorbike')
             # print(class_ID)
             if (option_val == 1):  # car-motorbike
-                if (class_ID == 4):
+                if (class_ID == 3):
                     return False
                 else:
                     return True
             else:
-                if (class_ID == 4):
-
+                if (class_ID == 3):
                     return True
                 else:
                     return False
         else:  # on the right lane
             if (option_val == 1):
-                if (class_ID == 4):
+                if (class_ID == 3):
                     return True
                 else:
                     return False
             else:  # motorbike-car
-                if (class_ID == 4):
+                if (class_ID == 3):
                     return False
                 else:
                     return True
@@ -108,12 +109,39 @@ def draw_bouding_box(frame, label, xmin, ymin, xmax, ymax, isWrong):
     return frame
 
 
+def wrong_lane_proof(proof_frame, id, xmin, ymin, xmax, ymax):
+    # print(wrong_lane_list)
+    if (id in wrong_lane_list):
+        return
+    else:
+        label = f"id:{id:.0f}"
+        (label_width, label_height), _ = cv2.getTextSize(
+            label, font, font_scale, thickness)
+
+        cv2.rectangle(proof_frame, (xmin, ymin), (xmax, ymax),
+                      box_color_alert, thickness)
+        cv2.rectangle(proof_frame, (xmin, ymin - label_height - 10),
+                      (xmin + label_width, ymin), box_color_alert, -1)
+        cv2.putText(proof_frame, label, (xmin, ymin - 5), font,
+                    font_scale, text_color, thickness)
+
+        wrong_lane_list.append(id)
+
+        # Convert the frame to PIL Image format
+        image = Image.fromarray(cv2.cvtColor(proof_frame, cv2.COLOR_BGR2RGB))
+
+        # Save the image to the output folder
+        image_path = os.path.join('./proofs', f'proof_{id}.jpg')
+        image.save(image_path)
+        return
+
+
 def run(source_path, destination_path):
 
     # Load the YOLO model
     # model = YOLO('best.pt')
 
-    model = YOLO("./yolov8n")
+    model = YOLO("./yolov8n.pt")
 
     # get infomation of detecting video
     cap = cv2.VideoCapture(source_path)
@@ -141,8 +169,7 @@ def run(source_path, destination_path):
 
     # print(ld2.points)
     # Loop over each frame of the video and perform object detection and tracking
-    # Filter the detection to only include classes (2(cars) 7(trucks) 5(bus))=>car   3(motorbike)
-    for result in model.track(source=source_path, tracker='bytetrack.yaml', show=False, stream=True, agnostic_nms=True):
+    for result in model.track(source=source_path, tracker='bytetrack.yaml', show=False, stream=True, agnostic_nms=True, classes=[2, 3, 5, 7]):
 
         # Get the original frame from the detection result
         frame = result.orig_img
@@ -158,6 +185,7 @@ def run(source_path, destination_path):
         # Filter the detection to only include classes 2 (cars) and 7 (trucks)
         # detections = [lst for lst in detections if lst[6] in [2, 7]]
         frame = draw_detection_line(frame, ld2.detection_line_coords)
+        proof_frame = frame.copy()
         for data in detections:
             # Define the coordinates of the bounding box
             if (len(data) == 8):
@@ -169,10 +197,14 @@ def run(source_path, destination_path):
 
                 # Draw the bounding box and label on the image
                 # Get the size of the label text
-
                 vehicle_pos = caculate_centroid(xmin, ymin, xmax, ymax)
                 wrong_flag = lane_detector(
                     ld2.points, vehicle_pos, ld.option_val, data[6])
+
+                if (wrong_flag == False):
+                    wrong_lane_proof(
+                        proof_frame, data[7], xmin, ymin, xmax, ymax)
+
                 draw_bouding_box(frame, label, xmin, ymin,
                                  xmax, ymax, wrong_flag)
 
